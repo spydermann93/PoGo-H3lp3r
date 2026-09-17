@@ -18,7 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.navigation.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -101,14 +100,12 @@ private fun BottomNavBar(navController: NavHostController) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination
 
-    val isTopLevelRoute = topLevelDestinations.any { dest ->
-        currentRoute?.hierarchy?.any { it.route == dest.route } == true
-    }
+    val isTopLevelRoute = topLevelDestinations.any { it.route == currentRoute?.route }
     if (!isTopLevelRoute) return
 
     NavigationBar {
         topLevelDestinations.forEach { destination ->
-            val selected = currentRoute?.hierarchy?.any { it.route == destination.route } == true
+            val selected = currentRoute?.route == destination.route
             NavigationBarItem(
                 selected = selected,
                 onClick = {
