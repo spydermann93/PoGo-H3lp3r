@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Local collection database is user data worth backing up. -->
+    <include domain="database" path="collection.db" />
+</full-backup-content>
