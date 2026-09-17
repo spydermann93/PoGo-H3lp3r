@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">PoGo TCG Helper</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_collection">Collection</string>
+    <string name="search_placeholder">Search cards by name…</string>
+    <string name="search_empty">Search for a Pokémon card to get started.</string>
+    <string name="search_no_results">No cards found.</string>
+    <string name="collection_empty">Your collection is empty. Add cards from the search screen.</string>
+    <string name="collection_total_value">Total value: %1$s</string>
+    <string name="add_to_collection">Add to collection</string>
+    <string name="remove_from_collection">Remove</string>
+    <string name="market_prices">Market prices</string>
+    <string name="tcgplayer">TCGplayer (USD)</string>
+    <string name="cardmarket">Cardmarket (EUR)</string>
+    <string name="weaknesses">Weaknesses</string>
+    <string name="resistances">Resistances</string>
+    <string name="attacks">Attacks</string>
+    <string name="error_generic">Something went wrong. Pull to retry.</string>
+</resources>
