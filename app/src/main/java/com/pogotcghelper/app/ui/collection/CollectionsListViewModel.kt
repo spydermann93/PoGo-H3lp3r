@@ -52,6 +52,7 @@ class CollectionsListViewModel(
     /** [targetCollectionId] to add into an existing collection, or [newCollectionName] to make one. */
     fun importSet(
         setId: String,
+        baseSetOnly: Boolean,
         targetCollectionId: Long?,
         newCollectionName: String?,
         markOwned: Boolean,
@@ -60,7 +61,7 @@ class CollectionsListViewModel(
         viewModelScope.launch {
             val collectionId = targetCollectionId
                 ?: collectionRepository.createCollection(newCollectionName.orEmpty().trim())
-            val cards = cardRepository.getSetCards(setId)
+            val cards = cardRepository.getSetCards(setId, baseSetOnly)
             collectionRepository.addSet(collectionId, cards, markOwned)
             onDone(collectionId)
         }

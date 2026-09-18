@@ -19,6 +19,9 @@ check current market prices, and track your personal collection.
 - **Import a full set** — pick any real TCG set and bulk-add every card in it to a
   collection in one go, either marked as owned (e.g. you just picked up a full set)
   or as an unchecked checklist you tick off card-by-card as you actually get them.
+  Choose the master set (every card, including secret rares) or just the base set
+  (cards numbered within the set's official printed count), so you can keep a base
+  set and a master set for the same expansion as two separate collections.
 
 ## Tech stack
 

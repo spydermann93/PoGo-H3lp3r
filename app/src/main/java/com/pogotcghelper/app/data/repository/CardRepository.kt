@@ -44,10 +44,19 @@ class CardRepository(private val api: TcgdexApi) {
      * Every card in a set, for bulk-importing a full set into a collection. These come from
      * the set's own brief card list, so -- same as search results -- they carry no pricing;
      * fetching prices for a whole set (up to ~250 cards) one at a time isn't worth the requests.
+     *
+     * When [baseSetOnly] is true, only cards numbered within the set's official/printed
+     * count are kept, dropping secret rares numbered past it. A card whose number isn't a
+     * plain integer (rare, but happens for some alternate printings) is excluded from a
+     * base-set import, since within a single set's card list a non-numeric id is virtually
+     * always a special/alternate variant rather than a base card.
      */
-    suspend fun getSetCards(setId: String): List<Card> {
+    suspend fun getSetCards(setId: String, baseSetOnly: Boolean = false): List<Card> {
         val set = api.getSet(setId)
-        return set.cards.map { it.toDomain(set.name) }
+        val allCards = set.cards.map { it.toDomain(set.name) }
+        val officialCount = set.cardCount?.official
+        if (!baseSetOnly || officialCount == null) return allCards
+        return allCards.filter { card -> (card.number?.toIntOrNull() ?: Int.MAX_VALUE) <= officialCount }
     }
 
     private suspend fun loadSets(): List<SetBriefDto> {

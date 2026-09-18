@@ -72,6 +72,18 @@ data class SetDto(
     val id: String,
     val name: String,
     val cards: List<CardBriefDto> = emptyList(),
+    val cardCount: SetCardCountDto? = null,
+)
+
+/**
+ * "official" is the set's printed/base card count (what's on the card, e.g. "4/102");
+ * "total" includes secret rares numbered past that. The gap between them is what
+ * distinguishes a base-set import from a master-set one.
+ */
+@Serializable
+data class SetCardCountDto(
+    val official: Int? = null,
+    val total: Int? = null,
 )
 
 @Serializable

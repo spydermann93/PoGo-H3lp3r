@@ -126,8 +126,8 @@ fun CollectionsListScreen(
             setName = set.name,
             collections = uiState.collections,
             onDismiss = { setToImport = null },
-            onConfirm = { collectionId, newCollectionName, markOwned ->
-                viewModel.importSet(set.id, collectionId, newCollectionName, markOwned) { id ->
+            onConfirm = { collectionId, newCollectionName, markOwned, baseSetOnly ->
+                viewModel.importSet(set.id, baseSetOnly, collectionId, newCollectionName, markOwned) { id ->
                     setToImport = null
                     onCollectionClick(id)
                 }
@@ -266,12 +266,14 @@ private fun ImportSetDialog(
     setName: String,
     collections: List<Collection>,
     onDismiss: () -> Unit,
-    onConfirm: (collectionId: Long?, newCollectionName: String?, markOwned: Boolean) -> Unit,
+    onConfirm: (collectionId: Long?, newCollectionName: String?, markOwned: Boolean, baseSetOnly: Boolean) -> Unit,
 ) {
     var selectedCollectionId by remember { mutableStateOf(collections.firstOrNull()?.id) }
     var creatingNew by remember { mutableStateOf(collections.isEmpty()) }
-    var newCollectionName by remember { mutableStateOf("") }
+    var newCollectionName by remember { mutableStateOf("$setName Master Set") }
+    var nameManuallyEdited by remember { mutableStateOf(false) }
     var markOwned by remember { mutableStateOf(true) }
+    var baseSetOnly by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -279,6 +281,25 @@ private fun ImportSetDialog(
         text = {
             Column {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = !baseSetOnly,
+                        onClick = {
+                            baseSetOnly = false
+                            if (!nameManuallyEdited) newCollectionName = "$setName Master Set"
+                        },
+                        label = { Text(stringResource(R.string.import_scope_master)) },
+                    )
+                    FilterChip(
+                        selected = baseSetOnly,
+                        onClick = {
+                            baseSetOnly = true
+                            if (!nameManuallyEdited) newCollectionName = "$setName Base Set"
+                        },
+                        label = { Text(stringResource(R.string.import_scope_base)) },
+                    )
+                }
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
                     FilterChip(
                         selected = markOwned,
                         onClick = { markOwned = true },
@@ -324,7 +345,10 @@ private fun ImportSetDialog(
                     if (creatingNew) {
                         OutlinedTextField(
                             value = newCollectionName,
-                            onValueChange = { newCollectionName = it },
+                            onValueChange = {
+                                newCollectionName = it
+                                nameManuallyEdited = true
+                            },
                             singleLine = true,
                             placeholder = { Text(stringResource(R.string.collection_name_placeholder)) },
                             modifier = Modifier.padding(start = 40.dp),
@@ -342,6 +366,7 @@ private fun ImportSetDialog(
                         if (creatingNew) null else selectedCollectionId,
                         if (creatingNew) newCollectionName else null,
                         markOwned,
+                        baseSetOnly,
                     )
                 },
             ) { Text(stringResource(R.string.import_action)) }

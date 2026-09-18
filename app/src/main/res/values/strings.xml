@@ -25,6 +25,8 @@
     <string name="import_set_title">Import \"%1$s\"</string>
     <string name="import_mark_owned">Mark as owned</string>
     <string name="import_mark_checklist">Checklist (not owned yet)</string>
+    <string name="import_scope_master">Master set</string>
+    <string name="import_scope_base">Base set only</string>
     <string name="import_action">Import</string>
     <string name="pick_set_title">Choose a set</string>
     <string name="pick_set_search_placeholder">Search sets…</string>
