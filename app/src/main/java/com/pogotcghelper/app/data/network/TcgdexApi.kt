@@ -3,6 +3,7 @@ package com.pogotcghelper.app.data.network
 import com.pogotcghelper.app.data.network.dto.CardBriefDto
 import com.pogotcghelper.app.data.network.dto.CardDto
 import com.pogotcghelper.app.data.network.dto.SetBriefDto
+import com.pogotcghelper.app.data.network.dto.SetDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -33,6 +34,10 @@ interface TcgdexApi {
     /** Every set, id + name only -- used to label search results, which omit set info. */
     @GET("sets")
     suspend fun getSets(): List<SetBriefDto>
+
+    /** A single set with every card in it, for bulk-importing a full set into a collection. */
+    @GET("sets/{id}")
+    suspend fun getSet(@Path("id") id: String): SetDto
 
     companion object {
         const val BASE_URL = "https://api.tcgdex.net/v2/en/"

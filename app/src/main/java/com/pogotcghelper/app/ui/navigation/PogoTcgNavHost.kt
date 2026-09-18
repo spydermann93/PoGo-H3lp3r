@@ -79,7 +79,9 @@ fun PogoTcgNavHost() {
             composable(Routes.COLLECTIONS) {
                 val viewModel: CollectionsListViewModel = viewModel(
                     factory = viewModelFactory {
-                        initializer { CollectionsListViewModel(container.collectionRepository) }
+                        initializer {
+                            CollectionsListViewModel(container.collectionRepository, container.cardRepository)
+                        }
                     }
                 )
                 CollectionsListScreen(

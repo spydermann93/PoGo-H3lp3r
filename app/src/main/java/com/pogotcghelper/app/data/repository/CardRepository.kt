@@ -2,12 +2,14 @@ package com.pogotcghelper.app.data.repository
 
 import com.pogotcghelper.app.data.network.TcgdexApi
 import com.pogotcghelper.app.data.network.dto.CardBriefDto
+import com.pogotcghelper.app.data.network.dto.SetBriefDto
 import com.pogotcghelper.app.domain.model.Card
+import com.pogotcghelper.app.domain.model.TcgSet
 
 class CardRepository(private val api: TcgdexApi) {
 
     /** Loaded once and cached -- search results carry only an id, not a set name. */
-    private var cachedSetNames: Map<String, String>? = null
+    private var cachedSets: List<SetBriefDto>? = null
 
     suspend fun searchByName(
         name: String,
@@ -23,7 +25,7 @@ class CardRepository(private val api: TcgdexApi) {
             sortOrder = if (sortDescending) "DESC" else "ASC",
             page = page,
         )
-        val setNames = loadSetNames()
+        val setNames = loadSets().associate { it.id to it.name }
         return response.map { brief -> brief.toDomain(setNameFor(brief, setNames)) }
     }
 
@@ -34,12 +36,25 @@ class CardRepository(private val api: TcgdexApi) {
     suspend fun getRarities(): List<String> =
         runCatching { api.getRarities() }.getOrDefault(emptyList())
 
-    private suspend fun loadSetNames(): Map<String, String> {
-        cachedSetNames?.let { return it }
-        val names = runCatching { api.getSets() }.getOrDefault(emptyList())
-            .associate { it.id to it.name }
-        cachedSetNames = names
-        return names
+    /** Every real TCG set, for a "pick a set to import" picker. */
+    suspend fun getSets(): List<TcgSet> =
+        loadSets().map { TcgSet(it.id, it.name) }
+
+    /**
+     * Every card in a set, for bulk-importing a full set into a collection. These come from
+     * the set's own brief card list, so -- same as search results -- they carry no pricing;
+     * fetching prices for a whole set (up to ~250 cards) one at a time isn't worth the requests.
+     */
+    suspend fun getSetCards(setId: String): List<Card> {
+        val set = api.getSet(setId)
+        return set.cards.map { it.toDomain(set.name) }
+    }
+
+    private suspend fun loadSets(): List<SetBriefDto> {
+        cachedSets?.let { return it }
+        val sets = runCatching { api.getSets() }.getOrDefault(emptyList())
+        cachedSets = sets
+        return sets
     }
 
     /** A card's id is "<setId>-<localId>" (e.g. "base1-4"); strip the localId to get the set id. */

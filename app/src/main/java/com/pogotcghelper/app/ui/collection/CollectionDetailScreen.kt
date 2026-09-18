@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -26,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pogotcghelper.app.R
@@ -69,6 +71,7 @@ fun CollectionDetailScreen(viewModel: CollectionDetailViewModel, onBack: () -> U
                     items(uiState.cards, key = { it.cardId }) { card ->
                         OwnedCardRow(
                             card = card,
+                            onMarkOwned = { viewModel.markOwned(card.cardId) },
                             onRemoveOne = { viewModel.removeOne(card.cardId) },
                         )
                         HorizontalDivider()
@@ -80,7 +83,9 @@ fun CollectionDetailScreen(viewModel: CollectionDetailViewModel, onBack: () -> U
 }
 
 @Composable
-private fun OwnedCardRow(card: OwnedCard, onRemoveOne: () -> Unit) {
+private fun OwnedCardRow(card: OwnedCard, onMarkOwned: () -> Unit, onRemoveOne: () -> Unit) {
+    val isOwned = card.quantity > 0
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -90,19 +95,27 @@ private fun OwnedCardRow(card: OwnedCard, onRemoveOne: () -> Unit) {
             CardArtwork(
                 imageUrl = card.imageUrl,
                 contentDescription = card.name,
-                modifier = Modifier.size(56.dp),
+                modifier = Modifier.size(56.dp).alpha(if (isOwned) 1f else 0.5f),
             )
             Column(modifier = Modifier.padding(start = 12.dp)) {
                 Text(text = card.name, style = MaterialTheme.typography.bodyLarge)
                 card.setName?.let { Text(text = it, style = MaterialTheme.typography.labelMedium) }
-                Text(text = "Qty: ${card.quantity}")
+                Text(
+                    text = if (isOwned) "Qty: ${card.quantity}" else stringResource(R.string.not_owned_yet),
+                )
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = card.marketPrice?.let { String.format(Locale.US, "$%.2f", it * card.quantity) } ?: "—",
-                modifier = Modifier.padding(end = 8.dp),
-            )
+            if (isOwned) {
+                Text(
+                    text = card.marketPrice?.let { String.format(Locale.US, "$%.2f", it * card.quantity) } ?: "—",
+                    modifier = Modifier.padding(end = 8.dp),
+                )
+            } else {
+                IconButton(onClick = onMarkOwned) {
+                    Icon(Icons.Filled.AddCircle, contentDescription = stringResource(R.string.mark_owned))
+                }
+            }
             IconButton(onClick = onRemoveOne) {
                 Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.remove_from_collection))
             }

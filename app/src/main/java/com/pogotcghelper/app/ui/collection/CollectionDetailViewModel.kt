@@ -42,6 +42,10 @@ class CollectionDetailViewModel(
         viewModelScope.launch { collectionRepository.removeOne(collectionId, cardId) }
     }
 
+    fun markOwned(cardId: String) {
+        viewModelScope.launch { collectionRepository.markOwned(collectionId, cardId) }
+    }
+
     fun removeAll(cardId: String) {
         viewModelScope.launch { collectionRepository.remove(collectionId, cardId) }
     }

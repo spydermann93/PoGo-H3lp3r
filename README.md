@@ -16,6 +16,9 @@ check current market prices, and track your personal collection.
   you like (e.g. "Charizards", "Trade binder"), each tracked independently with its
   own card list and total value. A card can be added to more than one collection at
   once, each with its own quantity.
+- **Import a full set** — pick any real TCG set and bulk-add every card in it to a
+  collection in one go, either marked as owned (e.g. you just picked up a full set)
+  or as an unchecked checklist you tick off card-by-card as you actually get them.
 
 ## Tech stack
 

@@ -66,6 +66,14 @@ data class SetBriefDto(
     val name: String,
 )
 
+/** Full shape returned by /sets/{id}, including every card in the set (brief shape). */
+@Serializable
+data class SetDto(
+    val id: String,
+    val name: String,
+    val cards: List<CardBriefDto> = emptyList(),
+)
+
 @Serializable
 data class PricingDto(
     // Not a plain variant->price map: TCGdex mixes "unit"/"updated" strings in as

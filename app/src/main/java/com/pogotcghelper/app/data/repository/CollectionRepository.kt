@@ -67,6 +67,35 @@ class CollectionRepository(
     }
 
     suspend fun remove(collectionId: Long, cardId: String) = ownedCardDao.delete(collectionId, cardId)
+
+    /** Ticks a set-checklist entry (quantity 0) over to owned, or bumps an owned one further. */
+    suspend fun markOwned(collectionId: Long, cardId: String) {
+        val existing = ownedCardDao.find(collectionId, cardId) ?: return
+        ownedCardDao.upsert(existing.copy(quantity = existing.quantity + 1))
+    }
+
+    /**
+     * Bulk-adds every card of a set into a collection: quantity 1 each if [markOwned], or
+     * quantity 0 (an unchecked checklist entry) otherwise. Cards already tracked in this
+     * collection are left untouched rather than overwritten.
+     */
+    suspend fun addSet(collectionId: Long, cards: List<Card>, markOwned: Boolean) {
+        val existingIds = ownedCardDao.findCardIdsIn(collectionId).toSet()
+        val addedAt = System.currentTimeMillis()
+        val newRows = cards.filter { it.id !in existingIds }.map { card ->
+            OwnedCardEntity(
+                collectionId = collectionId,
+                cardId = card.id,
+                name = card.name,
+                setName = card.setName,
+                imageUrl = card.smallImageUrl,
+                quantity = if (markOwned) 1 else 0,
+                marketPrice = card.bestMarketPriceUsd(),
+                addedAtEpochMillis = addedAt,
+            )
+        }
+        if (newRows.isNotEmpty()) ownedCardDao.upsertAll(newRows)
+    }
 }
 
 private fun CollectionSummaryRow.toDomain() = Collection(

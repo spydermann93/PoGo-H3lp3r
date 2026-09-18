@@ -20,6 +20,16 @@
     <string name="delete_collection">Delete collection</string>
     <string name="choose_collection">Add to which collection?</string>
     <string name="collection_card_count">%1$d cards · %2$s</string>
+    <string name="add_options_title">What would you like to add?</string>
+    <string name="import_set">Import a full set</string>
+    <string name="import_set_title">Import \"%1$s\"</string>
+    <string name="import_mark_owned">Mark as owned</string>
+    <string name="import_mark_checklist">Checklist (not owned yet)</string>
+    <string name="import_action">Import</string>
+    <string name="pick_set_title">Choose a set</string>
+    <string name="pick_set_search_placeholder">Search sets…</string>
+    <string name="not_owned_yet">Not owned yet</string>
+    <string name="mark_owned">Mark owned</string>
     <string name="market_prices">Market prices</string>
     <string name="view_sales">View sales</string>
     <string name="tcgplayer">TCGplayer (USD)</string>
