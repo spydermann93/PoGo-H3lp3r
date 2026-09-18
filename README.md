@@ -15,7 +15,9 @@ check current market prices, and track your personal collection.
 - **Multiple collections** — organize owned cards into as many named collections as
   you like (e.g. "Charizards", "Trade binder"), each tracked independently with its
   own card list and total value. A card can be added to more than one collection at
-  once, each with its own quantity.
+  once, each with its own quantity. Each collection displays as a 2-column grid;
+  ownership is shown three ways at once (desaturated art, a check-vs-add icon, and a
+  text label) so it never depends on color alone.
 - **Import a full set** — pick any real TCG set and bulk-add every card in it to a
   collection in one go, either marked as owned (e.g. you just picked up a full set)
   or as an unchecked checklist you tick off card-by-card as you actually get them.
