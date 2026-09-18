@@ -5,13 +5,32 @@ import com.pogotcghelper.app.data.network.dto.CardDto
 import com.pogotcghelper.app.domain.model.Attack
 import com.pogotcghelper.app.domain.model.Card
 import com.pogotcghelper.app.domain.model.TypeValue
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /** Preferred order of TCGplayer variants when a card is available in more than one finish. */
 private val TCGPLAYER_VARIANT_PRIORITY = listOf(
     "holofoil", "reverseHolofoil", "normal", "1stEditionHolofoil", "unlimitedHolofoil",
 )
+
+/** Non-variant keys mixed into the pricing.tcgplayer object alongside the per-finish prices. */
+private val TCGPLAYER_METADATA_KEYS = setOf("unit", "updated")
+
+private fun JsonObject.variantMarketPrice(variant: String): Double? =
+    (this[variant] as? JsonObject)?.get("marketPrice")?.jsonPrimitive?.doubleOrNull
+
+private fun bestTcgplayerMarketPrice(tcgplayer: JsonObject?): Double? {
+    if (tcgplayer == null) return null
+    TCGPLAYER_VARIANT_PRIORITY.forEach { variant ->
+        tcgplayer.variantMarketPrice(variant)?.let { return it }
+    }
+    return tcgplayer.entries
+        .firstOrNull { (key, value) -> key !in TCGPLAYER_METADATA_KEYS && value is JsonObject }
+        ?.let { (_, value) -> value.jsonObject["marketPrice"]?.jsonPrimitive?.doubleOrNull }
+}
 
 /** TCGdex gives a bare image URL; a quality + format suffix must be appended to load it. */
 private fun imageUrl(base: String?, quality: String): String =
@@ -44,11 +63,7 @@ fun CardBriefDto.toDomain(): Card = Card(
 )
 
 fun CardDto.toDomain(): Card {
-    val tcgplayerPrice = pricing?.tcgplayer
-        ?.let { prices ->
-            TCGPLAYER_VARIANT_PRIORITY.firstNotNullOfOrNull { variant -> prices[variant]?.marketPrice }
-                ?: prices.values.firstNotNullOfOrNull { it.marketPrice }
-        }
+    val tcgplayerPrice = bestTcgplayerMarketPrice(pricing?.tcgplayer)
     val cardmarketPrice = pricing?.cardmarket?.trend ?: pricing?.cardmarket?.avg
 
     return Card(

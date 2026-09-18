@@ -2,6 +2,7 @@ package com.pogotcghelper.app.data.network.dto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 /** Minimal shape returned by the /cards search endpoint (TCGdex keeps list payloads small). */
 @Serializable
@@ -60,17 +61,12 @@ data class CardSetDto(
 
 @Serializable
 data class PricingDto(
-    val tcgplayer: Map<String, TcgplayerVariantPriceDto> = emptyMap(),
+    // Not a plain variant->price map: TCGdex mixes "unit"/"updated" strings in as
+    // siblings of the per-variant ("normal", "holofoil", ...) price objects, so a
+    // typed Map<String, Dto> fails to decode. Read it as a raw object and pull
+    // individual variants out by key in the mapper instead.
+    val tcgplayer: JsonObject? = null,
     val cardmarket: CardmarketPricingDto? = null,
-)
-
-@Serializable
-data class TcgplayerVariantPriceDto(
-    val lowPrice: Double? = null,
-    val midPrice: Double? = null,
-    val highPrice: Double? = null,
-    val marketPrice: Double? = null,
-    val directLowPrice: Double? = null,
 )
 
 @Serializable
