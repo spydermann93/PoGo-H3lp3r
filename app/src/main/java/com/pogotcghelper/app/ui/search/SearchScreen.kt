@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -64,9 +62,9 @@ fun SearchScreen(
             )
 
             FilterAndSortRow(
-                selectedType = uiState.selectedType,
+                ownershipFilter = uiState.ownershipFilter,
                 sortDescending = uiState.sortDescending,
-                onTypeSelected = viewModel::onTypeSelected,
+                onOwnershipFilterSelected = viewModel::onOwnershipFilterSelected,
                 onSortToggle = viewModel::toggleSortOrder,
             )
 
@@ -84,14 +82,15 @@ fun SearchScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FilterAndSortRow(
-    selectedType: String?,
+    ownershipFilter: OwnershipFilter,
     sortDescending: Boolean,
-    onTypeSelected: (String) -> Unit,
+    onOwnershipFilterSelected: (OwnershipFilter) -> Unit,
     onSortToggle: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         IconButton(onClick = onSortToggle) {
             Icon(
@@ -99,15 +98,16 @@ private fun FilterAndSortRow(
                 contentDescription = stringResource(R.string.sort_by_name),
             )
         }
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(POKEMON_TYPES) { type ->
-                FilterChip(
-                    selected = selectedType == type,
-                    onClick = { onTypeSelected(type) },
-                    label = { Text(type) },
-                )
-            }
-        }
+        FilterChip(
+            selected = ownershipFilter == OwnershipFilter.OWNED,
+            onClick = { onOwnershipFilterSelected(OwnershipFilter.OWNED) },
+            label = { Text(stringResource(R.string.filter_owned)) },
+        )
+        FilterChip(
+            selected = ownershipFilter == OwnershipFilter.NOT_OWNED,
+            onClick = { onOwnershipFilterSelected(OwnershipFilter.NOT_OWNED) },
+            label = { Text(stringResource(R.string.filter_not_owned)) },
+        )
     }
 }
 

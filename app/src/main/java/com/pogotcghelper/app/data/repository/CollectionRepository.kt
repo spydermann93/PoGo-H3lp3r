@@ -36,6 +36,10 @@ class CollectionRepository(
         ownedCardDao.observeQuantitiesForCard(cardId)
             .map { rows -> rows.associate { it.collectionId to it.quantity } }
 
+    /** Every cardId owned in at least one collection, for filtering search results by ownership. */
+    fun observeOwnedCardIds(): Flow<Set<String>> =
+        ownedCardDao.observeAllOwnedCardIds().map { it.toSet() }
+
     suspend fun addOne(collectionId: Long, card: Card) {
         val existing = ownedCardDao.find(collectionId, card.id)
         val newQuantity = (existing?.quantity ?: 0) + 1

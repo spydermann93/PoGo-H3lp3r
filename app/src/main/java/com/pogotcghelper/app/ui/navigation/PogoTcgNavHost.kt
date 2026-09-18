@@ -68,7 +68,7 @@ fun PogoTcgNavHost() {
             composable(Routes.SEARCH) {
                 val viewModel: SearchViewModel = viewModel(
                     factory = viewModelFactory {
-                        initializer { SearchViewModel(container.cardRepository) }
+                        initializer { SearchViewModel(container.cardRepository, container.collectionRepository) }
                     }
                 )
                 SearchScreen(

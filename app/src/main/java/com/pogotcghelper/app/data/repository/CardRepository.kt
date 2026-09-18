@@ -7,7 +7,6 @@ class CardRepository(private val api: TcgdexApi) {
 
     suspend fun searchByName(
         name: String,
-        type: String? = null,
         sortDescending: Boolean = false,
         page: Int = 1,
     ): List<Card> {
@@ -15,7 +14,6 @@ class CardRepository(private val api: TcgdexApi) {
         val escaped = name.trim().replace("*", "")
         val response = api.searchCards(
             name = "*$escaped*",
-            type = type,
             sortOrder = if (sortDescending) "DESC" else "ASC",
             page = page,
         )

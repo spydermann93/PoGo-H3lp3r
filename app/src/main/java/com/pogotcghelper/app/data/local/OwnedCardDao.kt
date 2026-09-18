@@ -16,6 +16,10 @@ interface OwnedCardDao {
     @Query("SELECT collectionId, quantity FROM owned_cards WHERE cardId = :cardId")
     fun observeQuantitiesForCard(cardId: String): Flow<List<CardQuantityRow>>
 
+    /** Every cardId owned in at least one collection, regardless of which. */
+    @Query("SELECT DISTINCT cardId FROM owned_cards")
+    fun observeAllOwnedCardIds(): Flow<List<String>>
+
     @Query("SELECT * FROM owned_cards WHERE collectionId = :collectionId AND cardId = :cardId")
     suspend fun find(collectionId: Long, cardId: String): OwnedCardEntity?
 
