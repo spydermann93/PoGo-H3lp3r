@@ -2,6 +2,7 @@ package com.pogotcghelper.app.data.network
 
 import com.pogotcghelper.app.data.network.dto.CardBriefDto
 import com.pogotcghelper.app.data.network.dto.CardDto
+import com.pogotcghelper.app.data.network.dto.SetBriefDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -28,6 +29,10 @@ interface TcgdexApi {
     /** Canonical list of rarity strings this API recognizes, for building a filter UI. */
     @GET("rarities")
     suspend fun getRarities(): List<String>
+
+    /** Every set, id + name only -- used to label search results, which omit set info. */
+    @GET("sets")
+    suspend fun getSets(): List<SetBriefDto>
 
     companion object {
         const val BASE_URL = "https://api.tcgdex.net/v2/en/"

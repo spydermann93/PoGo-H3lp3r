@@ -59,6 +59,13 @@ data class CardSetDto(
     val symbol: String? = null,
 )
 
+/** Shape returned by the /sets list endpoint -- just enough to name-lookup a set by id. */
+@Serializable
+data class SetBriefDto(
+    val id: String,
+    val name: String,
+)
+
 @Serializable
 data class PricingDto(
     // Not a plain variant->price map: TCGdex mixes "unit"/"updated" strings in as

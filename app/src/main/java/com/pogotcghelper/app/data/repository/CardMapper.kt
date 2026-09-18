@@ -60,7 +60,7 @@ private fun imageUrl(base: String?, quality: String): String =
     base?.let { "$it/$quality.png" }.orEmpty()
 
 /** Search results only carry id/name/image; open the card to load everything else. */
-fun CardBriefDto.toDomain(): Card = Card(
+fun CardBriefDto.toDomain(setName: String? = null): Card = Card(
     id = id,
     name = name,
     supertype = null,
@@ -75,7 +75,7 @@ fun CardBriefDto.toDomain(): Card = Card(
     artist = null,
     rarity = null,
     flavorText = null,
-    setName = null,
+    setName = setName,
     setSeries = null,
     smallImageUrl = imageUrl(image, "low"),
     largeImageUrl = imageUrl(image, "high"),
