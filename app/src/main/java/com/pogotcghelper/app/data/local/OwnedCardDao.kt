@@ -17,10 +17,18 @@ interface OwnedCardDao {
     fun observeQuantitiesForCard(cardId: String): Flow<List<CardQuantityRow>>
 
     /**
-     * Every cardId actually owned (quantity > 0) in at least one collection, regardless of
-     * which -- excludes quantity-0 rows, which just track an unchecked item on a set checklist.
+     * Every cardId actually owned (quantity > 0) in at least one real (non-tracker)
+     * collection. Excludes quantity-0 rows (an unchecked checklist item) and, just as
+     * importantly, excludes tracker collections entirely -- ticking a card off a set
+     * checklist tracks progress, it isn't the same as owning the card.
      */
-    @Query("SELECT DISTINCT cardId FROM owned_cards WHERE quantity > 0")
+    @Query(
+        """
+        SELECT DISTINCT o.cardId FROM owned_cards o
+        JOIN collections c ON c.id = o.collectionId
+        WHERE o.quantity > 0 AND c.isTracker = 0
+        """
+    )
     fun observeAllOwnedCardIds(): Flow<List<String>>
 
     @Query("SELECT * FROM owned_cards WHERE collectionId = :collectionId AND cardId = :cardId")

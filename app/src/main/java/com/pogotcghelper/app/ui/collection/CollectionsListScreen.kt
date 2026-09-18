@@ -124,10 +124,10 @@ fun CollectionsListScreen(
     setToImport?.let { set ->
         ImportSetDialog(
             setName = set.name,
-            collections = uiState.collections,
+            trackers = uiState.collections.filter { it.isTracker },
             onDismiss = { setToImport = null },
-            onConfirm = { collectionId, newCollectionName, markOwned, baseSetOnly ->
-                viewModel.importSet(set.id, baseSetOnly, collectionId, newCollectionName, markOwned) { id ->
+            onConfirm = { collectionId, newCollectionName, baseSetOnly ->
+                viewModel.importSet(set.id, baseSetOnly, collectionId, newCollectionName) { id ->
                     setToImport = null
                     onCollectionClick(id)
                 }
@@ -148,14 +148,21 @@ private fun CollectionRow(collection: Collection, onClick: () -> Unit, onDelete:
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = collection.name, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = stringResource(
-                    R.string.collection_card_count,
-                    collection.cardCount,
-                    String.format(Locale.US, "$%.2f", collection.totalValueUsd),
-                ),
-                style = MaterialTheme.typography.labelMedium,
-            )
+            if (collection.isTracker) {
+                Text(
+                    text = stringResource(R.string.tracker_progress, collection.cardCount, collection.totalTracked),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            } else {
+                Text(
+                    text = stringResource(
+                        R.string.collection_card_count,
+                        collection.cardCount,
+                        String.format(Locale.US, "$%.2f", collection.totalValueUsd),
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            }
         }
         IconButton(onClick = onDelete) {
             Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete_collection))
@@ -260,19 +267,23 @@ private fun SetPickerDialog(
     )
 }
 
+/**
+ * Importing a set always creates or adds to a tracker -- a completion checklist, never
+ * your real inventory -- so only existing trackers are offered as a target, never a
+ * regular collection. See [CollectionRepository.addSet] for why.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ImportSetDialog(
     setName: String,
-    collections: List<Collection>,
+    trackers: List<Collection>,
     onDismiss: () -> Unit,
-    onConfirm: (collectionId: Long?, newCollectionName: String?, markOwned: Boolean, baseSetOnly: Boolean) -> Unit,
+    onConfirm: (collectionId: Long?, newCollectionName: String?, baseSetOnly: Boolean) -> Unit,
 ) {
-    var selectedCollectionId by remember { mutableStateOf(collections.firstOrNull()?.id) }
-    var creatingNew by remember { mutableStateOf(collections.isEmpty()) }
-    var newCollectionName by remember { mutableStateOf("$setName Master Set") }
+    var selectedCollectionId by remember { mutableStateOf(trackers.firstOrNull()?.id) }
+    var creatingNew by remember { mutableStateOf(trackers.isEmpty()) }
+    var newCollectionName by remember { mutableStateOf("$setName Master Set Tracker") }
     var nameManuallyEdited by remember { mutableStateOf(false) }
-    var markOwned by remember { mutableStateOf(true) }
     var baseSetOnly by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -280,12 +291,18 @@ private fun ImportSetDialog(
         title = { Text(stringResource(R.string.import_set_title, setName)) },
         text = {
             Column {
+                Text(
+                    text = stringResource(R.string.import_set_explainer),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
                         selected = !baseSetOnly,
                         onClick = {
                             baseSetOnly = false
-                            if (!nameManuallyEdited) newCollectionName = "$setName Master Set"
+                            if (!nameManuallyEdited) newCollectionName = "$setName Master Set Tracker"
                         },
                         label = { Text(stringResource(R.string.import_scope_master)) },
                     )
@@ -293,46 +310,33 @@ private fun ImportSetDialog(
                         selected = baseSetOnly,
                         onClick = {
                             baseSetOnly = true
-                            if (!nameManuallyEdited) newCollectionName = "$setName Base Set"
+                            if (!nameManuallyEdited) newCollectionName = "$setName Base Set Tracker"
                         },
                         label = { Text(stringResource(R.string.import_scope_base)) },
-                    )
-                }
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-                    FilterChip(
-                        selected = markOwned,
-                        onClick = { markOwned = true },
-                        label = { Text(stringResource(R.string.import_mark_owned)) },
-                    )
-                    FilterChip(
-                        selected = !markOwned,
-                        onClick = { markOwned = false },
-                        label = { Text(stringResource(R.string.import_mark_checklist)) },
                     )
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
                 Column(modifier = Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) {
-                    collections.forEach { collection ->
+                    trackers.forEach { tracker ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
                                     creatingNew = false
-                                    selectedCollectionId = collection.id
+                                    selectedCollectionId = tracker.id
                                 },
                         ) {
                             RadioButton(
-                                selected = !creatingNew && selectedCollectionId == collection.id,
+                                selected = !creatingNew && selectedCollectionId == tracker.id,
                                 onClick = {
                                     creatingNew = false
-                                    selectedCollectionId = collection.id
+                                    selectedCollectionId = tracker.id
                                 },
                             )
-                            Text(collection.name)
+                            Text(tracker.name)
                         }
                     }
                     Row(
@@ -340,7 +344,7 @@ private fun ImportSetDialog(
                         modifier = Modifier.fillMaxWidth().clickable { creatingNew = true },
                     ) {
                         RadioButton(selected = creatingNew, onClick = { creatingNew = true })
-                        Text(stringResource(R.string.new_collection))
+                        Text(stringResource(R.string.new_tracker))
                     }
                     if (creatingNew) {
                         OutlinedTextField(
@@ -365,7 +369,6 @@ private fun ImportSetDialog(
                     onConfirm(
                         if (creatingNew) null else selectedCollectionId,
                         if (creatingNew) newCollectionName else null,
-                        markOwned,
                         baseSetOnly,
                     )
                 },

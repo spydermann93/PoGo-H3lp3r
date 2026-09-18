@@ -49,20 +49,22 @@ class CollectionsListViewModel(
         viewModelScope.launch { collectionRepository.deleteCollection(collectionId) }
     }
 
-    /** [targetCollectionId] to add into an existing collection, or [newCollectionName] to make one. */
+    /**
+     * Imports a set as a completion-tracking checklist, never as owned cards. [targetCollectionId]
+     * adds into an existing tracker, or [newCollectionName] creates a new one.
+     */
     fun importSet(
         setId: String,
         baseSetOnly: Boolean,
         targetCollectionId: Long?,
         newCollectionName: String?,
-        markOwned: Boolean,
         onDone: (Long) -> Unit,
     ) {
         viewModelScope.launch {
             val collectionId = targetCollectionId
-                ?: collectionRepository.createCollection(newCollectionName.orEmpty().trim())
+                ?: collectionRepository.createCollection(newCollectionName.orEmpty().trim(), isTracker = true)
             val cards = cardRepository.getSetCards(setId, baseSetOnly)
-            collectionRepository.addSet(collectionId, cards, markOwned)
+            collectionRepository.addSet(collectionId, cards)
             onDone(collectionId)
         }
     }

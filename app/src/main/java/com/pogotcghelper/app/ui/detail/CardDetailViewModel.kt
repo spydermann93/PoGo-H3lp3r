@@ -41,7 +41,9 @@ class CardDetailViewModel(
         CardDetailUiState(
             isLoading = isLoading,
             card = card,
-            collections = collections,
+            // Trackers are a set-completion checklist, not somewhere a searched card gets
+            // "added" in the usual sense -- only offer real collections here.
+            collections = collections.filter { !it.isTracker },
             quantitiesByCollection = quantities,
             error = error,
         )

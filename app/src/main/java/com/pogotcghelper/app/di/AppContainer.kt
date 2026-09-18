@@ -47,7 +47,7 @@ class AppContainer(context: Context) {
         CollectionDatabase::class.java,
         CollectionDatabase.DATABASE_NAME,
     )
-        .addMigrations(CollectionDatabase.MIGRATION_1_2)
+        .addMigrations(CollectionDatabase.MIGRATION_1_2, CollectionDatabase.MIGRATION_2_3)
         .addCallback(object : RoomDatabase.Callback() {
             // Fresh installs start directly at the latest schema, so MIGRATION_1_2
             // never runs for them; seed the same default collection here instead.

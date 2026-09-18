@@ -18,12 +18,13 @@ check current market prices, and track your personal collection.
   once, each with its own quantity. Each collection displays as a 2-column grid;
   ownership is shown three ways at once (desaturated art, a check-vs-add icon, and a
   text label) so it never depends on color alone.
-- **Import a full set** — pick any real TCG set and bulk-add every card in it to a
-  collection in one go, either marked as owned (e.g. you just picked up a full set)
-  or as an unchecked checklist you tick off card-by-card as you actually get them.
-  Choose the master set (every card, including secret rares) or just the base set
-  (cards numbered within the set's official printed count), so you can keep a base
-  set and a master set for the same expansion as two separate collections.
+- **Set trackers** — pick any real TCG set to bulk-create a completion checklist for
+  it, separate from your real collections: nothing in a tracker counts as owned
+  anywhere else in the app (search's owned filter, collection totals, etc.). Choose
+  the master set (every card, including secret rares) or just the base set (cards
+  numbered within the set's official printed count). Tick a card off as you get it
+  to watch your progress ("142 / 198 collected"), and optionally tap it to actually
+  add that card into one of your real collections whenever you're ready to.
 
 ## Tech stack
 

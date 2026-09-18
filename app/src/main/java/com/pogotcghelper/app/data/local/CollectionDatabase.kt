@@ -7,7 +7,7 @@ import androidx.room.migration.Migration
 
 @Database(
     entities = [CollectionEntity::class, OwnedCardEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class CollectionDatabase : RoomDatabase() {
@@ -65,6 +65,18 @@ abstract class CollectionDatabase : RoomDatabase() {
                 )
                 db.execSQL("DROP TABLE `owned_cards`")
                 db.execSQL("ALTER TABLE `owned_cards_new` RENAME TO `owned_cards`")
+            }
+        }
+
+        /**
+         * v3 adds the tracker/collection distinction. Any set-import checklist created
+         * before this existed was added into a regular collection as quantity-0 rows;
+         * those rows are harmless leftovers now (they still don't count as owned, and
+         * simply won't render as tracker progress), not touched by this migration.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `collections` ADD COLUMN `isTracker` INTEGER NOT NULL DEFAULT 0")
             }
         }
     }
