@@ -49,10 +49,23 @@ Open the project in Android Studio (Ladybug or newer) and run it, or from the CL
 ```
 
 Requires network access to Google's Maven repository (for AndroidX/Compose/Room)
-and to `api.pokemontcg.io` at runtime. No API key is required for the public
-Pokémon TCG API at low request volumes.
+and to `api.pokemontcg.io` at runtime.
 
-> **Note:** this project was scaffolded in a sandboxed environment without access
-> to the Android SDK or Google's Maven repository, so the Gradle build has not
-> been verified end-to-end here. Run `./gradlew assembleDebug` locally or in CI
-> to build and catch any issues.
+### Pokémon TCG API key (recommended)
+
+The app works without any configuration, but pokemontcg.io's anonymous tier has a
+low rate limit and returns 5xx errors under load rather than a clean "rate limited"
+response — you'll see this if you browse several cards in quick succession. A free
+key raises that limit substantially:
+
+1. Get a key at [pokemontcg.io/signup](https://pokemontcg.io/signup) (no cost).
+2. Add it to your local, untracked `local.properties` (create the file if Android
+   Studio hasn't already):
+   ```
+   POKEMONTCG_API_KEY=your-key-here
+   ```
+3. Re-sync/rebuild — the key is picked up automatically via a generated `BuildConfig`
+   field and sent as the `X-Api-Key` header on every request.
+
+The app also retries a request up to twice on a 5xx before surfacing an error,
+which smooths over occasional transient failures even without a key.

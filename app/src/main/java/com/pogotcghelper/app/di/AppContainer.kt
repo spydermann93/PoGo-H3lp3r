@@ -3,8 +3,11 @@ package com.pogotcghelper.app.di
 import android.content.Context
 import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.pogotcghelper.app.BuildConfig
 import com.pogotcghelper.app.data.local.CollectionDatabase
+import com.pogotcghelper.app.data.network.ApiKeyInterceptor
 import com.pogotcghelper.app.data.network.PokemonTcgApi
+import com.pogotcghelper.app.data.network.RetryOnServerErrorInterceptor
 import com.pogotcghelper.app.data.repository.CardRepository
 import com.pogotcghelper.app.data.repository.CollectionRepository
 import kotlinx.serialization.json.Json
@@ -25,6 +28,8 @@ class AppContainer(context: Context) {
     }
 
     private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(ApiKeyInterceptor(BuildConfig.POKEMONTCG_API_KEY))
+        .addInterceptor(RetryOnServerErrorInterceptor())
         .addInterceptor(
             HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC }
         )
