@@ -4,19 +4,26 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -56,12 +63,49 @@ fun SearchScreen(
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
             )
 
+            FilterAndSortRow(
+                selectedType = uiState.selectedType,
+                sortDescending = uiState.sortDescending,
+                onTypeSelected = viewModel::onTypeSelected,
+                onSortToggle = viewModel::toggleSortOrder,
+            )
+
             when {
                 uiState.isLoading -> LoadingState()
                 uiState.error != null -> MessageState(uiState.error ?: stringResource(R.string.error_generic))
                 uiState.hasSearched && uiState.results.isEmpty() -> MessageState(stringResource(R.string.search_no_results))
                 !uiState.hasSearched -> MessageState(stringResource(R.string.search_empty))
                 else -> CardGrid(cards = uiState.results, onCardClick = onCardClick)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterAndSortRow(
+    selectedType: String?,
+    sortDescending: Boolean,
+    onTypeSelected: (String) -> Unit,
+    onSortToggle: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onSortToggle) {
+            Icon(
+                imageVector = if (sortDescending) Icons.Filled.ArrowDownward else Icons.Filled.ArrowUpward,
+                contentDescription = stringResource(R.string.sort_by_name),
+            )
+        }
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(POKEMON_TYPES) { type ->
+                FilterChip(
+                    selected = selectedType == type,
+                    onClick = { onTypeSelected(type) },
+                    label = { Text(type) },
+                )
             }
         }
     }

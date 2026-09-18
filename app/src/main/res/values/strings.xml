@@ -3,6 +3,7 @@
     <string name="nav_search">Search</string>
     <string name="nav_collection">Collections</string>
     <string name="search_placeholder">Search cards by name…</string>
+    <string name="sort_by_name">Sort by name</string>
     <string name="search_empty">Search for a Pokémon card to get started.</string>
     <string name="search_no_results">No cards found.</string>
     <string name="collection_empty">This collection is empty. Add cards from the search screen.</string>

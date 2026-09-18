@@ -5,10 +5,20 @@ import com.pogotcghelper.app.domain.model.Card
 
 class CardRepository(private val api: TcgdexApi) {
 
-    suspend fun searchByName(name: String, page: Int = 1): List<Card> {
+    suspend fun searchByName(
+        name: String,
+        type: String? = null,
+        sortDescending: Boolean = false,
+        page: Int = 1,
+    ): List<Card> {
         if (name.isBlank()) return emptyList()
         val escaped = name.trim().replace("*", "")
-        val response = api.searchCards(name = "*$escaped*", page = page)
+        val response = api.searchCards(
+            name = "*$escaped*",
+            type = type,
+            sortOrder = if (sortDescending) "DESC" else "ASC",
+            page = page,
+        )
         return response.map { it.toDomain() }
     }
 

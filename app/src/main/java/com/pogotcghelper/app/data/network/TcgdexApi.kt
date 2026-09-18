@@ -15,6 +15,9 @@ interface TcgdexApi {
     @GET("cards")
     suspend fun searchCards(
         @Query("name") name: String,
+        @Query("types") type: String? = null,
+        @Query("sort:field") sortField: String = "name",
+        @Query("sort:order") sortOrder: String = "ASC",
         @Query("pagination:page") page: Int = 1,
         @Query("pagination:itemsPerPage") itemsPerPage: Int = 30,
     ): List<CardBriefDto>
