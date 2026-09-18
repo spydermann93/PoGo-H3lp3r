@@ -32,9 +32,12 @@ private fun bestTcgplayerMarketPrice(tcgplayer: JsonObject?): Double? {
         ?.let { (_, value) -> value.jsonObject["marketPrice"]?.jsonPrimitive?.doubleOrNull }
 }
 
-/** TCGdex gives a bare image URL; a quality + format suffix must be appended to load it. */
+/**
+ * TCGdex gives a bare image URL; a quality + format suffix must be appended to load it.
+ * png is used over webp since some older/promo cards appear to lack a webp asset.
+ */
 private fun imageUrl(base: String?, quality: String): String =
-    base?.let { "$it/$quality.webp" }.orEmpty()
+    base?.let { "$it/$quality.png" }.orEmpty()
 
 /** Search results only carry id/name/image; open the card to load everything else. */
 fun CardBriefDto.toDomain(): Card = Card(
