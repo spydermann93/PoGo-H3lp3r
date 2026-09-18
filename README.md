@@ -5,8 +5,8 @@ check current market prices, and track your personal collection.
 
 ## Features
 
-- **Card search** — look up any Pokémon TCG card by name via the public
-  [pokemontcg.io](https://pokemontcg.io) API, browsed as a grid of card art.
+- **Card search** — look up any Pokémon TCG card by name via the free, open-source
+  [TCGdex](https://tcgdex.dev) API, browsed as a grid of card art.
 - **Card detail** — full artwork, HP/types, attacks, weaknesses/resistances, and
   current market prices from both TCGplayer (USD) and Cardmarket (EUR).
 - **Collection tracker** — add cards you own with a tap, track quantities, and see
@@ -27,7 +27,7 @@ check current market prices, and track your personal collection.
 ```
 app/src/main/java/com/pogotcghelper/app/
 ├── data/
-│   ├── network/      # Retrofit API + DTOs for pokemontcg.io
+│   ├── network/      # Retrofit API + DTOs for the TCGdex API
 │   ├── local/         # Room database/entities for the owned-card collection
 │   └── repository/    # CardRepository, CollectionRepository, DTO→domain mapping
 ├── domain/model/       # Plain Kotlin domain models (Card, OwnedCard, Attack, ...)
@@ -49,23 +49,15 @@ Open the project in Android Studio (Ladybug or newer) and run it, or from the CL
 ```
 
 Requires network access to Google's Maven repository (for AndroidX/Compose/Room)
-and to `api.pokemontcg.io` at runtime.
+and to `api.tcgdex.net` at runtime. No account, API key, or configuration is
+required — [TCGdex](https://tcgdex.dev) is free and open-source. The app also
+retries a request up to twice on a 5xx before surfacing an error, as insurance
+against any transient failure.
 
-### Pokémon TCG API key (recommended)
-
-The app works without any configuration, but pokemontcg.io's anonymous tier has a
-low rate limit and returns 5xx errors under load rather than a clean "rate limited"
-response — you'll see this if you browse several cards in quick succession. A free
-key raises that limit substantially:
-
-1. Get a key at [pokemontcg.io/signup](https://pokemontcg.io/signup) (no cost).
-2. Add it to your local, untracked `local.properties` (create the file if Android
-   Studio hasn't already):
-   ```
-   POKEMONTCG_API_KEY=your-key-here
-   ```
-3. Re-sync/rebuild — the key is picked up automatically via a generated `BuildConfig`
-   field and sent as the `X-Api-Key` header on every request.
-
-The app also retries a request up to twice on a 5xx before surfacing an error,
-which smooths over occasional transient failures even without a key.
+> **Note:** the app used to run against pokemontcg.io, but that service's new
+> account signups are now closed (it's being folded into a paid successor,
+> Scrydex) and its anonymous tier was returning frequent 5xx errors under load.
+> TCGdex was substituted as a free, actively-maintained alternative. Its exact
+> JSON schema couldn't be verified end-to-end against this sandbox's network
+> restrictions, so if you notice a missing field (e.g. a blank price or image)
+> that's likely a mismapped field name — flag it and it can be corrected.

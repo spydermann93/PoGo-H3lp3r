@@ -1,109 +1,83 @@
 package com.pogotcghelper.app.data.network.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
+/** Minimal shape returned by the /cards search endpoint (TCGdex keeps list payloads small). */
 @Serializable
-data class CardListResponseDto(
-    val data: List<CardDto> = emptyList(),
-    val page: Int = 1,
-    val pageSize: Int = 0,
-    val count: Int = 0,
-    val totalCount: Int = 0,
+data class CardBriefDto(
+    val id: String,
+    val localId: String? = null,
+    val name: String,
+    val image: String? = null,
 )
 
-@Serializable
-data class CardResponseDto(
-    val data: CardDto,
-)
-
+/** Full shape returned by /cards/{id}. */
 @Serializable
 data class CardDto(
     val id: String,
+    val localId: String? = null,
     val name: String,
-    val supertype: String? = null,
-    val subtypes: List<String> = emptyList(),
-    val hp: String? = null,
+    val image: String? = null,
+    val category: String? = null,
+    val illustrator: String? = null,
+    val rarity: String? = null,
+    val hp: Int? = null,
     val types: List<String> = emptyList(),
-    val evolvesFrom: String? = null,
+    val evolveFrom: String? = null,
+    val description: String? = null,
     val attacks: List<AttackDto> = emptyList(),
     val weaknesses: List<TypeValueDto> = emptyList(),
     val resistances: List<TypeValueDto> = emptyList(),
-    val retreatCost: List<String> = emptyList(),
-    val number: String? = null,
-    val artist: String? = null,
-    val rarity: String? = null,
-    val flavorText: String? = null,
+    val retreat: Int? = null,
     val set: CardSetDto? = null,
-    val images: CardImagesDto,
-    val tcgplayer: TcgplayerDto? = null,
-    val cardmarket: CardmarketDto? = null,
+    val pricing: PricingDto? = null,
 )
 
 @Serializable
 data class AttackDto(
-    val name: String,
     val cost: List<String> = emptyList(),
-    val convertedEnergyCost: Int = 0,
-    val damage: String? = null,
-    val text: String? = null,
+    val name: String,
+    val effect: String? = null,
+    // TCGdex documents this as string | number depending on the card; decode loosely
+    // and read the raw text back out in the mapper rather than risk a decode failure.
+    val damage: JsonElement? = null,
 )
 
 @Serializable
 data class TypeValueDto(
     val type: String,
-    val value: String,
+    val value: String? = null,
 )
 
 @Serializable
 data class CardSetDto(
     val id: String,
     val name: String,
-    val series: String? = null,
-    val releaseDate: String? = null,
-    val images: CardSetImagesDto? = null,
-)
-
-@Serializable
-data class CardSetImagesDto(
-    val symbol: String? = null,
     val logo: String? = null,
+    val symbol: String? = null,
 )
 
 @Serializable
-data class CardImagesDto(
-    val small: String,
-    val large: String,
+data class PricingDto(
+    val tcgplayer: Map<String, TcgplayerVariantPriceDto> = emptyMap(),
+    val cardmarket: CardmarketPricingDto? = null,
 )
 
 @Serializable
-data class TcgplayerDto(
-    val url: String? = null,
-    val updatedAt: String? = null,
-    val prices: Map<String, TcgplayerPriceDto> = emptyMap(),
-)
-
-@Serializable
-data class TcgplayerPriceDto(
-    val low: Double? = null,
-    val mid: Double? = null,
-    val high: Double? = null,
-    val market: Double? = null,
-    val directLow: Double? = null,
-)
-
-@Serializable
-data class CardmarketDto(
-    val url: String? = null,
-    val updatedAt: String? = null,
-    val prices: CardmarketPricesDto? = null,
-)
-
-@Serializable
-data class CardmarketPricesDto(
-    val averageSellPrice: Double? = null,
+data class TcgplayerVariantPriceDto(
     val lowPrice: Double? = null,
-    val trendPrice: Double? = null,
-    val suggestedPrice: Double? = null,
+    val midPrice: Double? = null,
+    val highPrice: Double? = null,
+    val marketPrice: Double? = null,
+    val directLowPrice: Double? = null,
+)
+
+@Serializable
+data class CardmarketPricingDto(
+    val avg: Double? = null,
+    val low: Double? = null,
+    val trend: Double? = null,
     val avg1: Double? = null,
     val avg7: Double? = null,
     val avg30: Double? = null,

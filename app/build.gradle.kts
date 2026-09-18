@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,14 +5,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
-
-// Optional pokemontcg.io API key, read from local.properties (never committed) so the
-// public anonymous rate limit isn't the default experience. See README for how to get one.
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) file.inputStream().use { load(it) }
-}
-val pokemonTcgApiKey: String = localProperties.getProperty("POKEMONTCG_API_KEY", "")
 
 android {
     namespace = "com.pogotcghelper.app"
@@ -28,7 +18,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "POKEMONTCG_API_KEY", "\"$pokemonTcgApiKey\"")
     }
 
     buildTypes {
@@ -52,7 +41,6 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true
     }
 
     packaging {
