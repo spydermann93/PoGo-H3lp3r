@@ -1,5 +1,7 @@
 package com.pogotcghelper.app.ui.detail
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,11 +11,13 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pogotcghelper.app.R
@@ -147,8 +152,18 @@ private fun CardDetailContent(
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
         SectionTitle(stringResource(R.string.market_prices))
-        PriceRow(label = stringResource(R.string.tcgplayer), price = card.tcgplayerMarketPriceUsd, symbol = "$")
-        PriceRow(label = stringResource(R.string.cardmarket), price = card.cardmarketPriceEur, symbol = "€")
+        PriceRow(
+            label = stringResource(R.string.tcgplayer),
+            price = card.tcgplayerMarketPriceUsd,
+            symbol = "$",
+            url = card.tcgplayerUrl,
+        )
+        PriceRow(
+            label = stringResource(R.string.cardmarket),
+            price = card.cardmarketPriceEur,
+            symbol = "€",
+            url = card.cardmarketUrl,
+        )
     }
 }
 
@@ -263,12 +278,37 @@ private fun TypeValueRow(values: List<TypeValue>) {
 }
 
 @Composable
-private fun PriceRow(label: String, price: Double?, symbol: String) {
+private fun PriceRow(label: String, price: Double?, symbol: String, url: String?) {
+    val context = LocalContext.current
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .let { modifier ->
+                if (url != null) {
+                    modifier.clickable {
+                        runCatching {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        }
+                    }
+                } else {
+                    modifier
+                }
+            }
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(text = label)
-        Text(text = price?.let { String.format(Locale.US, "%s%.2f", symbol, it) } ?: "—")
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(text = price?.let { String.format(Locale.US, "%s%.2f", symbol, it) } ?: "—")
+            if (url != null) {
+                Icon(
+                    imageVector = Icons.Filled.OpenInNew,
+                    contentDescription = stringResource(R.string.view_sales),
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
     }
 }

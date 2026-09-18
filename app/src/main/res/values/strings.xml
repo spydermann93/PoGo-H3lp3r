@@ -18,6 +18,7 @@
     <string name="choose_collection">Add to which collection?</string>
     <string name="collection_card_count">%1$d cards · %2$s</string>
     <string name="market_prices">Market prices</string>
+    <string name="view_sales">View sales</string>
     <string name="tcgplayer">TCGplayer (USD)</string>
     <string name="cardmarket">Cardmarket (EUR)</string>
     <string name="weaknesses">Weaknesses</string>

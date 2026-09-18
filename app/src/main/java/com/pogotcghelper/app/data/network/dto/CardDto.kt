@@ -77,4 +77,5 @@ data class CardmarketPricingDto(
     val avg1: Double? = null,
     val avg7: Double? = null,
     val avg30: Double? = null,
+    val url: String? = null,
 )

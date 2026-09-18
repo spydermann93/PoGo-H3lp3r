@@ -6,10 +6,12 @@ import com.pogotcghelper.app.domain.model.Attack
 import com.pogotcghelper.app.domain.model.Card
 import com.pogotcghelper.app.domain.model.TypeValue
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.net.URLEncoder
 
 /** Preferred order of TCGplayer variants when a card is available in more than one finish. */
 private val TCGPLAYER_VARIANT_PRIORITY = listOf(
@@ -31,6 +33,19 @@ private fun bestTcgplayerMarketPrice(tcgplayer: JsonObject?): Double? {
         .firstOrNull { (key, value) -> key !in TCGPLAYER_METADATA_KEYS && value is JsonObject }
         ?.let { (_, value) -> value.jsonObject["marketPrice"]?.jsonPrimitive?.doubleOrNull }
 }
+
+/**
+ * A direct product/listing URL when the API happens to provide one, falling back to a
+ * marketplace search by card name otherwise -- so a "view sales" link is always available
+ * even when the API's own linking data is sparse.
+ */
+private fun tcgplayerLink(tcgplayer: JsonObject?, cardName: String): String =
+    (tcgplayer?.get("url") as? JsonPrimitive)?.contentOrNull
+        ?: "https://www.tcgplayer.com/search/pokemon/product?q=" + URLEncoder.encode(cardName, "UTF-8")
+
+private fun cardmarketLink(url: String?, cardName: String): String =
+    url ?: "https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=" +
+        URLEncoder.encode(cardName, "UTF-8")
 
 /**
  * TCGdex gives a bare image URL; a quality + format suffix must be appended to load it.
@@ -97,8 +112,8 @@ fun CardDto.toDomain(): Card {
         smallImageUrl = imageUrl(image, "low"),
         largeImageUrl = imageUrl(image, "high"),
         tcgplayerMarketPriceUsd = tcgplayerPrice,
-        tcgplayerUrl = null,
+        tcgplayerUrl = tcgplayerLink(pricing?.tcgplayer, name),
         cardmarketPriceEur = cardmarketPrice,
-        cardmarketUrl = null,
+        cardmarketUrl = cardmarketLink(pricing?.cardmarket?.url, name),
     )
 }
