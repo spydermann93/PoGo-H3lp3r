@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -68,6 +70,14 @@ fun SearchScreen(
                 onSortToggle = viewModel::toggleSortOrder,
             )
 
+            if (uiState.availableRarities.isNotEmpty()) {
+                RarityFilterRow(
+                    rarities = uiState.availableRarities,
+                    selectedRarity = uiState.selectedRarity,
+                    onRaritySelected = viewModel::onRaritySelected,
+                )
+            }
+
             when {
                 uiState.isLoading -> LoadingState()
                 uiState.error != null -> MessageState(uiState.error ?: stringResource(R.string.error_generic))
@@ -108,6 +118,26 @@ private fun FilterAndSortRow(
             onClick = { onOwnershipFilterSelected(OwnershipFilter.NOT_OWNED) },
             label = { Text(stringResource(R.string.filter_not_owned)) },
         )
+    }
+}
+
+@Composable
+private fun RarityFilterRow(
+    rarities: List<String>,
+    selectedRarity: String?,
+    onRaritySelected: (String) -> Unit,
+) {
+    LazyRow(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(rarities) { rarity ->
+            FilterChip(
+                selected = rarity == selectedRarity,
+                onClick = { onRaritySelected(rarity) },
+                label = { Text(rarity) },
+            )
+        }
     }
 }
 

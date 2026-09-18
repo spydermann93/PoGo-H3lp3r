@@ -7,8 +7,9 @@ check current market prices, and track your personal collection.
 
 - **Card search** — look up any Pokémon TCG card by name via the free, open-source
   [TCGdex](https://tcgdex.dev) API, browsed as a grid of card art. Sort alphabetically
-  ascending/descending (server-side), and filter to cards you already own or don't
-  own yet across any collection (local, no extra network calls).
+  ascending/descending (server-side), filter to cards you already own or don't
+  own yet across any collection (local, no extra network calls), and filter by
+  rarity (server-side, using TCGdex's own list of recognized rarities).
 - **Card detail** — full artwork, HP/types, attacks, weaknesses/resistances, and
   current market prices from both TCGplayer (USD) and Cardmarket (EUR).
 - **Multiple collections** — organize owned cards into as many named collections as

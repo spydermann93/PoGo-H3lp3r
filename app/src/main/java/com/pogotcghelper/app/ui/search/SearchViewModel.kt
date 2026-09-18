@@ -20,6 +20,8 @@ enum class OwnershipFilter { ALL, OWNED, NOT_OWNED }
 data class SearchUiState(
     val query: String = "",
     val ownershipFilter: OwnershipFilter = OwnershipFilter.ALL,
+    val selectedRarity: String? = null,
+    val availableRarities: List<String> = emptyList(),
     val sortDescending: Boolean = false,
     val isLoading: Boolean = false,
     val results: List<Card> = emptyList(),
@@ -30,6 +32,7 @@ data class SearchUiState(
 private data class InternalState(
     val query: String = "",
     val ownershipFilter: OwnershipFilter = OwnershipFilter.ALL,
+    val selectedRarity: String? = null,
     val sortDescending: Boolean = false,
     val isLoading: Boolean = false,
     val rawResults: List<Card> = emptyList(),
@@ -45,15 +48,19 @@ class SearchViewModel(
 ) : ViewModel() {
 
     private val internalState = MutableStateFlow(InternalState())
+    private val availableRarities = MutableStateFlow<List<String>>(emptyList())
     private var searchJob: Job? = null
 
     val uiState: StateFlow<SearchUiState> = combine(
         internalState,
         collectionRepository.observeOwnedCardIds(),
-    ) { state, ownedIds ->
+        availableRarities,
+    ) { state, ownedIds, rarities ->
         SearchUiState(
             query = state.query,
             ownershipFilter = state.ownershipFilter,
+            selectedRarity = state.selectedRarity,
+            availableRarities = rarities,
             sortDescending = state.sortDescending,
             isLoading = state.isLoading,
             results = applyOwnershipFilter(state.rawResults, state.ownershipFilter, ownedIds),
@@ -61,6 +68,12 @@ class SearchViewModel(
             hasSearched = state.hasSearched,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SearchUiState())
+
+    init {
+        viewModelScope.launch {
+            availableRarities.value = cardRepository.getRarities()
+        }
+    }
 
     fun onQueryChange(query: String) {
         internalState.update { it.copy(query = query) }
@@ -72,6 +85,14 @@ class SearchViewModel(
         internalState.update {
             it.copy(ownershipFilter = if (it.ownershipFilter == filter) OwnershipFilter.ALL else filter)
         }
+    }
+
+    /** A server-side filter, so changing it re-runs the search. */
+    fun onRaritySelected(rarity: String) {
+        internalState.update {
+            it.copy(selectedRarity = if (it.selectedRarity == rarity) null else rarity)
+        }
+        scheduleSearch(debounce = false)
     }
 
     fun toggleSortOrder() {
@@ -98,7 +119,11 @@ class SearchViewModel(
         val state = internalState.value
         internalState.update { it.copy(isLoading = true, error = null) }
         runCatching {
-            cardRepository.searchByName(name = state.query, sortDescending = state.sortDescending)
+            cardRepository.searchByName(
+                name = state.query,
+                rarity = state.selectedRarity,
+                sortDescending = state.sortDescending,
+            )
         }
             .onSuccess { cards ->
                 internalState.update { it.copy(isLoading = false, rawResults = cards, hasSearched = true) }
