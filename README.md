@@ -9,8 +9,10 @@ check current market prices, and track your personal collection.
   [TCGdex](https://tcgdex.dev) API, browsed as a grid of card art.
 - **Card detail** — full artwork, HP/types, attacks, weaknesses/resistances, and
   current market prices from both TCGplayer (USD) and Cardmarket (EUR).
-- **Collection tracker** — add cards you own with a tap, track quantities, and see
-  your collection's total estimated value, persisted locally with Room.
+- **Multiple collections** — organize owned cards into as many named collections as
+  you like (e.g. "Charizards", "Trade binder"), each tracked independently with its
+  own card list and total value. A card can be added to more than one collection at
+  once, each with its own quantity.
 
 ## Tech stack
 
@@ -30,12 +32,12 @@ app/src/main/java/com/pogotcghelper/app/
 │   ├── network/      # Retrofit API + DTOs for the TCGdex API
 │   ├── local/         # Room database/entities for the owned-card collection
 │   └── repository/    # CardRepository, CollectionRepository, DTO→domain mapping
-├── domain/model/       # Plain Kotlin domain models (Card, OwnedCard, Attack, ...)
+├── domain/model/       # Plain Kotlin domain models (Card, OwnedCard, Collection, ...)
 ├── di/                 # AppContainer: manual dependency wiring
 └── ui/
     ├── search/         # Card search/browse screen
-    ├── detail/         # Card detail screen (attacks, prices, add to collection)
-    ├── collection/      # Collection tracker screen
+    ├── detail/         # Card detail screen (attacks, prices, add-to-collection picker)
+    ├── collection/      # Collections list + per-collection card list screens
     ├── navigation/      # NavHost + bottom navigation
     └── theme/           # Material 3 theme
 ```

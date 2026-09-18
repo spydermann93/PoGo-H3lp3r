@@ -26,8 +26,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pogotcghelper.app.PogoTcgApplication
 import com.pogotcghelper.app.R
-import com.pogotcghelper.app.ui.collection.CollectionScreen
-import com.pogotcghelper.app.ui.collection.CollectionViewModel
+import com.pogotcghelper.app.ui.collection.CollectionDetailScreen
+import com.pogotcghelper.app.ui.collection.CollectionDetailViewModel
+import com.pogotcghelper.app.ui.collection.CollectionsListScreen
+import com.pogotcghelper.app.ui.collection.CollectionsListViewModel
 import com.pogotcghelper.app.ui.detail.CardDetailScreen
 import com.pogotcghelper.app.ui.detail.CardDetailViewModel
 import com.pogotcghelper.app.ui.search.SearchScreen
@@ -35,16 +37,18 @@ import com.pogotcghelper.app.ui.search.SearchViewModel
 
 private object Routes {
     const val SEARCH = "search"
-    const val COLLECTION = "collection"
+    const val COLLECTIONS = "collections"
+    const val COLLECTION_DETAIL = "collections/{collectionId}"
     const val CARD_DETAIL = "card/{cardId}"
     fun cardDetail(cardId: String) = "card/$cardId"
+    fun collectionDetail(collectionId: Long) = "collections/$collectionId"
 }
 
 private data class TopLevelDestination(val route: String, val labelRes: Int, val icon: ImageVector)
 
 private val topLevelDestinations = listOf(
     TopLevelDestination(Routes.SEARCH, R.string.nav_search, Icons.Filled.Search),
-    TopLevelDestination(Routes.COLLECTION, R.string.nav_collection, Icons.Filled.Collections),
+    TopLevelDestination(Routes.COLLECTIONS, R.string.nav_collection, Icons.Filled.Collections),
 )
 
 @Composable
@@ -72,13 +76,25 @@ fun PogoTcgNavHost() {
                     onCardClick = { cardId -> navController.navigate(Routes.cardDetail(cardId)) },
                 )
             }
-            composable(Routes.COLLECTION) {
-                val viewModel: CollectionViewModel = viewModel(
+            composable(Routes.COLLECTIONS) {
+                val viewModel: CollectionsListViewModel = viewModel(
                     factory = viewModelFactory {
-                        initializer { CollectionViewModel(container.collectionRepository) }
+                        initializer { CollectionsListViewModel(container.collectionRepository) }
                     }
                 )
-                CollectionScreen(viewModel = viewModel)
+                CollectionsListScreen(
+                    viewModel = viewModel,
+                    onCollectionClick = { id -> navController.navigate(Routes.collectionDetail(id)) },
+                )
+            }
+            composable(Routes.COLLECTION_DETAIL) { backStackEntry ->
+                val collectionId = backStackEntry.arguments?.getString("collectionId")?.toLongOrNull() ?: return@composable
+                val viewModel: CollectionDetailViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { CollectionDetailViewModel(collectionId, container.collectionRepository) }
+                    }
+                )
+                CollectionDetailScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
             }
             composable(Routes.CARD_DETAIL) { backStackEntry ->
                 val cardId = backStackEntry.arguments?.getString("cardId").orEmpty()

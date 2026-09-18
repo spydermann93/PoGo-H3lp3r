@@ -5,16 +5,19 @@ import androidx.lifecycle.viewModelScope
 import com.pogotcghelper.app.data.repository.CardRepository
 import com.pogotcghelper.app.data.repository.CollectionRepository
 import com.pogotcghelper.app.domain.model.Card
+import com.pogotcghelper.app.domain.model.Collection
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class CardDetailUiState(
     val isLoading: Boolean = true,
     val card: Card? = null,
-    val ownedQuantity: Int = 0,
+    val collections: List<Collection> = emptyList(),
+    val quantitiesByCollection: Map<Long, Int> = emptyMap(),
     val error: String? = null,
 )
 
@@ -24,8 +27,25 @@ class CardDetailViewModel(
     private val collectionRepository: CollectionRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CardDetailUiState())
-    val uiState: StateFlow<CardDetailUiState> = _uiState.asStateFlow()
+    private val cardState = MutableStateFlow<Card?>(null)
+    private val loadingState = MutableStateFlow(true)
+    private val errorState = MutableStateFlow<String?>(null)
+
+    val uiState: StateFlow<CardDetailUiState> = combine(
+        cardState,
+        loadingState,
+        errorState,
+        collectionRepository.observeCollections(),
+        collectionRepository.observeQuantitiesForCard(cardId),
+    ) { card, isLoading, error, collections, quantities ->
+        CardDetailUiState(
+            isLoading = isLoading,
+            card = card,
+            collections = collections,
+            quantitiesByCollection = quantities,
+            error = error,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CardDetailUiState())
 
     init {
         load()
@@ -33,31 +53,36 @@ class CardDetailViewModel(
 
     private fun load() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            loadingState.value = true
+            errorState.value = null
             runCatching { cardRepository.getCard(cardId) }
-                .onSuccess { card ->
-                    val owned = collectionRepository.quantityFor(cardId)
-                    _uiState.update { it.copy(isLoading = false, card = card, ownedQuantity = owned) }
+                .onSuccess {
+                    cardState.value = it
+                    loadingState.value = false
                 }
-                .onFailure { throwable ->
-                    _uiState.update { it.copy(isLoading = false, error = throwable.message ?: "Failed to load card") }
+                .onFailure {
+                    errorState.value = it.message ?: "Failed to load card"
+                    loadingState.value = false
                 }
         }
     }
 
-    fun addToCollection() {
-        val card = _uiState.value.card ?: return
-        viewModelScope.launch {
-            collectionRepository.addOne(card)
-            _uiState.update { it.copy(ownedQuantity = it.ownedQuantity + 1) }
-        }
+    fun addToCollection(collectionId: Long) {
+        val card = cardState.value ?: return
+        viewModelScope.launch { collectionRepository.addOne(collectionId, card) }
     }
 
-    fun removeFromCollection() {
-        if (_uiState.value.ownedQuantity <= 0) return
+    fun removeFromCollection(collectionId: Long) {
+        viewModelScope.launch { collectionRepository.removeOne(collectionId, cardId) }
+    }
+
+    fun createCollectionAndAdd(name: String) {
+        val card = cardState.value ?: return
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
         viewModelScope.launch {
-            collectionRepository.removeOne(cardId)
-            _uiState.update { it.copy(ownedQuantity = (it.ownedQuantity - 1).coerceAtLeast(0)) }
+            val id = collectionRepository.createCollection(trimmed)
+            collectionRepository.addOne(id, card)
         }
     }
 }

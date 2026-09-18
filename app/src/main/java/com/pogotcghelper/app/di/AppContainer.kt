@@ -2,6 +2,8 @@ package com.pogotcghelper.app.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.pogotcghelper.app.data.local.CollectionDatabase
 import com.pogotcghelper.app.data.network.RetryOnServerErrorInterceptor
@@ -44,8 +46,21 @@ class AppContainer(context: Context) {
         context.applicationContext,
         CollectionDatabase::class.java,
         CollectionDatabase.DATABASE_NAME,
-    ).build()
+    )
+        .addMigrations(CollectionDatabase.MIGRATION_1_2)
+        .addCallback(object : RoomDatabase.Callback() {
+            // Fresh installs start directly at the latest schema, so MIGRATION_1_2
+            // never runs for them; seed the same default collection here instead.
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                db.execSQL(
+                    "INSERT INTO `collections` (`id`, `name`, `createdAtEpochMillis`) VALUES " +
+                        "(${CollectionDatabase.DEFAULT_COLLECTION_ID}, 'My Collection', ${System.currentTimeMillis()})"
+                )
+            }
+        })
+        .build()
 
     val cardRepository = CardRepository(api)
-    val collectionRepository = CollectionRepository(database.ownedCardDao())
+    val collectionRepository = CollectionRepository(database.collectionDao(), database.ownedCardDao())
 }
