@@ -29,9 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.pogotcghelper.app.R
 import com.pogotcghelper.app.domain.model.Card
+import com.pogotcghelper.app.ui.common.CardArtwork
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,8 +103,8 @@ private fun CardGridItem(card: Card, onClick: () -> Unit) {
             .padding(4.dp)
             .clickable(onClick = onClick),
     ) {
-        AsyncImage(
-            model = card.smallImageUrl,
+        CardArtwork(
+            imageUrl = card.smallImageUrl,
             contentDescription = card.name,
             modifier = Modifier.fillMaxWidth().aspectRatio(0.72f),
         )

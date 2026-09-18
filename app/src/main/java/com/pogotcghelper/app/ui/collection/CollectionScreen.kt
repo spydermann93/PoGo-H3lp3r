@@ -27,9 +27,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.pogotcghelper.app.R
 import com.pogotcghelper.app.domain.model.OwnedCard
+import com.pogotcghelper.app.ui.common.CardArtwork
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,8 +81,8 @@ private fun OwnedCardRow(card: OwnedCard, onRemoveOne: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = card.imageUrl,
+            CardArtwork(
+                imageUrl = card.imageUrl,
                 contentDescription = card.name,
                 modifier = Modifier.size(56.dp),
             )

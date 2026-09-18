@@ -30,11 +30,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.pogotcghelper.app.R
 import com.pogotcghelper.app.domain.model.Attack
 import com.pogotcghelper.app.domain.model.Card
 import com.pogotcghelper.app.domain.model.TypeValue
+import com.pogotcghelper.app.ui.common.CardArtwork
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,8 +88,8 @@ private fun CardDetailContent(
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
     ) {
-        AsyncImage(
-            model = card.largeImageUrl,
+        CardArtwork(
+            imageUrl = card.largeImageUrl,
             contentDescription = card.name,
             modifier = Modifier.fillMaxWidth().aspectRatio(0.72f),
         )
