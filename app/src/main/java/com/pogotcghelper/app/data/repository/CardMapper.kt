@@ -34,18 +34,23 @@ private fun bestTcgplayerMarketPrice(tcgplayer: JsonObject?): Double? {
         ?.let { (_, value) -> value.jsonObject["marketPrice"]?.jsonPrimitive?.doubleOrNull }
 }
 
+/** "<name> <set>" so the search lands on the specific printing rather than every version of the card. */
+private fun searchQuery(cardName: String, setName: String?): String =
+    listOfNotNull(cardName, setName).joinToString(" ")
+
 /**
  * A direct product/listing URL when the API happens to provide one, falling back to a
- * marketplace search by card name otherwise -- so a "view sales" link is always available
- * even when the API's own linking data is sparse.
+ * marketplace search by card name + set otherwise -- so a "view sales" link is always
+ * useful even when the API's own linking data is sparse.
  */
-private fun tcgplayerLink(tcgplayer: JsonObject?, cardName: String): String =
+private fun tcgplayerLink(tcgplayer: JsonObject?, cardName: String, setName: String?): String =
     (tcgplayer?.get("url") as? JsonPrimitive)?.contentOrNull
-        ?: "https://www.tcgplayer.com/search/pokemon/product?q=" + URLEncoder.encode(cardName, "UTF-8")
+        ?: "https://www.tcgplayer.com/search/pokemon/product?q=" +
+            URLEncoder.encode(searchQuery(cardName, setName), "UTF-8")
 
-private fun cardmarketLink(url: String?, cardName: String): String =
+private fun cardmarketLink(url: String?, cardName: String, setName: String?): String =
     url ?: "https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=" +
-        URLEncoder.encode(cardName, "UTF-8")
+        URLEncoder.encode(searchQuery(cardName, setName), "UTF-8")
 
 /**
  * TCGdex gives a bare image URL; a quality + format suffix must be appended to load it.
@@ -112,8 +117,8 @@ fun CardDto.toDomain(): Card {
         smallImageUrl = imageUrl(image, "low"),
         largeImageUrl = imageUrl(image, "high"),
         tcgplayerMarketPriceUsd = tcgplayerPrice,
-        tcgplayerUrl = tcgplayerLink(pricing?.tcgplayer, name),
+        tcgplayerUrl = tcgplayerLink(pricing?.tcgplayer, name, set?.name),
         cardmarketPriceEur = cardmarketPrice,
-        cardmarketUrl = cardmarketLink(pricing?.cardmarket?.url, name),
+        cardmarketUrl = cardmarketLink(pricing?.cardmarket?.url, name, set?.name),
     )
 }
