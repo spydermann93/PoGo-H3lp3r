@@ -14,8 +14,12 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  * There's no free image-recognition API that identifies a Pokémon card by photo alone, so
  * this is the practical alternative: read the printed name/number off the card, then let
  * the caller search for it normally. Always closes [imageProxy], even on failure.
+ *
+ * Uses [ImageProxy.getImage], which CameraX marks [ExperimentalGetImage]. Opting in here
+ * absorbs that requirement so callers don't need to -- this function's own signature has
+ * nothing experimental about it.
  */
-@ExperimentalGetImage
+@OptIn(ExperimentalGetImage::class)
 suspend fun recognizeCardText(imageProxy: ImageProxy): List<String> = suspendCancellableCoroutine { continuation ->
     val mediaImage = imageProxy.image
     if (mediaImage == null) {

@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
@@ -119,7 +118,6 @@ private fun CameraPermissionRequest(onRequest: () -> Unit) {
  * rather than continuously analyzing every preview frame, which keeps this simple and
  * avoids fighting over a live-updating guess while the user is still framing the card.
  */
-@OptIn(ExperimentalGetImage::class)
 @Composable
 private fun CameraCaptureView(
     isRecognizing: Boolean,
@@ -178,7 +176,6 @@ private fun CameraCaptureView(
                         imageCapture.takePicture(
                             executor,
                             object : ImageCapture.OnImageCapturedCallback() {
-                                @OptIn(ExperimentalGetImage::class)
                                 override fun onCaptureSuccess(image: ImageProxy) {
                                     scope.launch { onCaptured(recognizeCardText(image)) }
                                 }
