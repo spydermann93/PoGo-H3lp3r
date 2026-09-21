@@ -2,6 +2,15 @@
     <string name="app_name">PoGo TCG Helper</string>
     <string name="nav_search">Search</string>
     <string name="nav_collection">Collections</string>
+    <string name="nav_scan">Scan</string>
+    <string name="scan_instructions">Frame the card\'s name, then tap to scan</string>
+    <string name="scan_capture">Scan card</string>
+    <string name="scan_permission_rationale">Camera access is needed to scan a card\'s name and look it up.</string>
+    <string name="scan_grant_permission">Allow camera access</string>
+    <string name="scan_review_title">Recognized text (edit if it\'s wrong)</string>
+    <string name="scan_search">Search</string>
+    <string name="scan_retake">Retake</string>
+    <string name="scan_no_text_found">Couldn\'t read any text from that photo. Try again with better lighting and less glare.</string>
     <string name="search_placeholder">Search cards by name…</string>
     <string name="sort_by_name">Sort by name</string>
     <string name="filter_owned">Owned</string>

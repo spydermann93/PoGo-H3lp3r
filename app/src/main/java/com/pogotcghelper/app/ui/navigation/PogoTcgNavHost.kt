@@ -2,6 +2,7 @@ package com.pogotcghelper.app.ui.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -32,11 +33,14 @@ import com.pogotcghelper.app.ui.collection.CollectionsListScreen
 import com.pogotcghelper.app.ui.collection.CollectionsListViewModel
 import com.pogotcghelper.app.ui.detail.CardDetailScreen
 import com.pogotcghelper.app.ui.detail.CardDetailViewModel
+import com.pogotcghelper.app.ui.scan.ScanScreen
+import com.pogotcghelper.app.ui.scan.ScanViewModel
 import com.pogotcghelper.app.ui.search.SearchScreen
 import com.pogotcghelper.app.ui.search.SearchViewModel
 
 private object Routes {
     const val SEARCH = "search"
+    const val SCAN = "scan"
     const val COLLECTIONS = "collections"
     const val COLLECTION_DETAIL = "collections/{collectionId}"
     const val CARD_DETAIL = "card/{cardId}"
@@ -48,6 +52,7 @@ private data class TopLevelDestination(val route: String, val labelRes: Int, val
 
 private val topLevelDestinations = listOf(
     TopLevelDestination(Routes.SEARCH, R.string.nav_search, Icons.Filled.Search),
+    TopLevelDestination(Routes.SCAN, R.string.nav_scan, Icons.Filled.CameraAlt),
     TopLevelDestination(Routes.COLLECTIONS, R.string.nav_collection, Icons.Filled.Collections),
 )
 
@@ -72,6 +77,17 @@ fun PogoTcgNavHost() {
                     }
                 )
                 SearchScreen(
+                    viewModel = viewModel,
+                    onCardClick = { cardId -> navController.navigate(Routes.cardDetail(cardId)) },
+                )
+            }
+            composable(Routes.SCAN) {
+                val viewModel: ScanViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { ScanViewModel(container.cardRepository) }
+                    }
+                )
+                ScanScreen(
                     viewModel = viewModel,
                     onCardClick = { cardId -> navController.navigate(Routes.cardDetail(cardId)) },
                 )

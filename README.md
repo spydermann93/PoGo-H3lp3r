@@ -25,6 +25,11 @@ check current market prices, and track your personal collection.
   numbered within the set's official printed count). Tick a card off as you get it
   to watch your progress ("142 / 198 collected"), and optionally tap it to actually
   add that card into one of your real collections whenever you're ready to.
+- **Scan to look up** — point the camera at a card and tap to scan. There's no free
+  image-recognition API that identifies a specific Pokémon card from a photo, so this
+  reads the card's printed name with on-device OCR (ML Kit, offline, no account) and
+  runs it through the normal search, with the recognized text shown and editable in
+  case OCR misreads it (glare, italic fonts, etc. can throw it off).
 
 ## Tech stack
 
@@ -34,6 +39,7 @@ check current market prices, and track your personal collection.
 - Room for local persistence
 - Navigation Compose
 - Coil for image loading
+- CameraX + ML Kit on-device text recognition for card scanning
 - Manual dependency injection (`AppContainer`) — no DI framework, kept intentionally simple
 
 ## Project structure
@@ -46,8 +52,10 @@ app/src/main/java/com/pogotcghelper/app/
 │   └── repository/    # CardRepository, CollectionRepository, DTO→domain mapping
 ├── domain/model/       # Plain Kotlin domain models (Card, OwnedCard, Collection, ...)
 ├── di/                 # AppContainer: manual dependency wiring
+├── ocr/                 # Camera-frame -> ML Kit text recognition bridge
 └── ui/
     ├── search/         # Card search/browse screen
+    ├── scan/            # Camera capture + recognized-text review/search screen
     ├── detail/         # Card detail screen (attacks, prices, add-to-collection picker)
     ├── collection/      # Collections list + per-collection card list screens
     ├── navigation/      # NavHost + bottom navigation
