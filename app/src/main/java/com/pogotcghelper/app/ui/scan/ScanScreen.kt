@@ -68,6 +68,7 @@ import com.pogotcghelper.app.ui.common.CardArtwork
 import java.util.concurrent.Executors
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanScreen(viewModel: ScanViewModel, onCardClick: (String) -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
@@ -140,7 +141,8 @@ private fun CameraCaptureView(
                 cameraProviderFuture.addListener(
                     {
                         val cameraProvider = cameraProviderFuture.get()
-                        val preview = Preview.Builder().build().also { it.surfaceProvider = previewView.surfaceProvider }
+                        val preview = Preview.Builder().build()
+                            .also { it.setSurfaceProvider(previewView.surfaceProvider) }
                         runCatching {
                             cameraProvider.unbindAll()
                             cameraProvider.bindToLifecycle(
