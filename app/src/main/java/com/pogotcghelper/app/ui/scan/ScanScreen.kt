@@ -178,6 +178,7 @@ private fun CameraCaptureView(
                         imageCapture.takePicture(
                             executor,
                             object : ImageCapture.OnImageCapturedCallback() {
+                                @OptIn(ExperimentalGetImage::class)
                                 override fun onCaptureSuccess(image: ImageProxy) {
                                     scope.launch { onCaptured(recognizeCardText(image)) }
                                 }
