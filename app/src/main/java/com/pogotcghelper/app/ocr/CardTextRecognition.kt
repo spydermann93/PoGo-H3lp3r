@@ -1,6 +1,8 @@
 package com.pogotcghelper.app.ocr
 
-import androidx.camera.core.ExperimentalGetImage
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -13,38 +15,43 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  * its text as a list of lines (roughly top-to-bottom, matching ML Kit's block/line order).
  * There's no free image-recognition API that identifies a Pokémon card by photo alone, so
  * this is the practical alternative: read the printed name/number off the card, then let
- * the caller search for it normally. Always closes [imageProxy], even on failure.
+ * the caller search for it normally. Always closes [imageProxy].
  *
- * Uses [ImageProxy.getImage], which CameraX marks [ExperimentalGetImage]. Opting in here
- * absorbs that requirement so callers don't need to -- this function's own signature has
- * nothing experimental about it. The [ImageProxy.getImage] access is deliberately a plain
- * statement here rather than inside the [suspendCancellableCoroutine] lambda below: Android
- * Lint's opt-in check doesn't reliably see an enclosing @OptIn through a lambda argument
- * (even to an inline function like this one), so it has to sit directly in this function's
- * own body to be recognized as covered.
+ * [ImageCapture]'s in-memory capture callback hands back a JPEG-encoded frame -- a single
+ * plane of compressed bytes, not raw YUV pixels -- so this decodes it with [BitmapFactory]
+ * rather than going through ML Kit's `InputImage.fromMediaImage`, which expects raw
+ * YUV_420_888/NV21 data. Feeding it compressed JPEG bytes instead doesn't crash, it just
+ * silently misreads them as pixels, producing garbled OCR output.
  */
-@OptIn(ExperimentalGetImage::class)
 suspend fun recognizeCardText(imageProxy: ImageProxy): List<String> {
-    val mediaImage = imageProxy.image
-    if (mediaImage == null) {
-        imageProxy.close()
-        return emptyList()
-    }
+    val bitmap = decodeUprightBitmap(imageProxy)
+    imageProxy.close()
+    if (bitmap == null) return emptyList()
 
-    val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
+    val inputImage = InputImage.fromBitmap(bitmap, 0)
     return suspendCancellableCoroutine { continuation ->
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         recognizer.process(inputImage)
             .addOnSuccessListener { visionText ->
                 val lines = visionText.textBlocks.flatMap { block -> block.lines.map { it.text.trim() } }
                     .filter { it.isNotBlank() }
-                imageProxy.close()
                 continuation.resume(lines)
             }
             .addOnFailureListener {
-                imageProxy.close()
                 continuation.resume(emptyList())
             }
     }
+}
+
+/** Decodes the captured JPEG frame and bakes CameraX's reported rotation into the bitmap. */
+private fun decodeUprightBitmap(imageProxy: ImageProxy): Bitmap? {
+    val buffer = imageProxy.planes[0].buffer
+    val bytes = ByteArray(buffer.remaining())
+    buffer.get(bytes)
+    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return null
+
+    val rotation = imageProxy.imageInfo.rotationDegrees
+    if (rotation == 0) return bitmap
+    val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 }
